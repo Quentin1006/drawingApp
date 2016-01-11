@@ -4,8 +4,9 @@ Canvas = function () {
 
   var createSvg = function() {
     svg = d3.select('#canvas').append('svg')
-      .attr('width', 800)
-      .attr('height',600);
+      .attr('width', '100%')
+      .attr('height',600)
+      .attr('id',"my-svg");
   };
   createSvg();
 

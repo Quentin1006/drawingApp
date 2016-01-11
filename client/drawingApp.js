@@ -5,9 +5,8 @@ var canvas;
 var lastX=0;
 var lastY=0;
 var strokeWidth = 1;
-var thickness=1;
+var thickness= Session.get("sliderVal");
 var strokeColor = "black";
-console.log(thickness)
 
 Meteor.startup( function() {
   canvas = new Canvas();
@@ -20,8 +19,28 @@ Meteor.startup( function() {
     }
   });
 });
-
 Template.wall.events({
+
+  "click .save-work" : function(){
+    $(".export").remove()
+    var svg = document.getElementById('my-svg');
+    svg.setAttribute('width',800);
+    var svgData = new XMLSerializer().serializeToString( svg );
+    var canvas = document.createElement("canvas");
+    var svgSize = svg.getBoundingClientRect();
+    canvas.width = svgSize.width*3;
+    canvas.height = svgSize.height*3;
+    var ctx = canvas.getContext("2d");
+    var img = document.createElement( "img" );
+    img.setAttribute( "src", "data:image/svg+xml;base64," + btoa( svgData ) );
+
+    img.onload = function() {
+      ctx.drawImage( img, 100, 100, canvas.width,canvas.height );
+      var link =canvas.toDataURL("image/png")
+      $(".save-work-wrapper").append("<div class='export'><a href="+link+" target='_blank'>Preview</a></div>")
+    };
+    svg.setAttribute('width','100%');
+  },
 
   "click button.clear": function (event) {
     Meteor.call('clear', function() {
@@ -31,52 +50,134 @@ Template.wall.events({
 
   //choose a color. Initialise the last vals, otherwise a stray line will appear.
 
+  "click .colors button":function(event){
+    var width = $(".color-picked").css("width");
+    $(".color-picked").css("height", width)
+    var color = event.target.style.backgroundColor;
+    $(".color-picked").css("background-color", color);
+    if(color === "rgb(255, 255, 255)"){
+      $(".color-picked").css('border','1px solid #000000');
+    }
+    else{
+      $(".color-picked").css('border','');
+    }
+
+
+    //var color = this.
+    //$("colorPicked").css("background")
+  },
   "click button.red": function () {
     lastX=0;
     lastY=0;
-    strokeColor = "red";
+    strokeColor = "#FF0000";
+
   },
 
   "click button.black": function () {
     lastX=0;
     lastY=0;
-    strokeColor = "black";
+    strokeColor = "#000000";
   },
 
   "click button.white": function () {
     lastX=0;
     lastY=0;
-    strokeColor = "white";
+    strokeColor = "#FFFFFF";
   },
 
   "click button.blue": function () {
     lastX=0;
     lastY=0;
-    strokeColor = "blue";
+    strokeColor = "#0000FF";
   },
-
+  "click button.silver": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#C0C0C0";
+  },
+  "click button.gray": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#808080";
+  },
+  "click button.brown": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#800000";
+  },
+  "click button.yellow": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#FFFF00";
+  },
   "click button.green": function () {
     lastX=0;
     lastY=0;
-    strokeColor = "green";
+    strokeColor = "#0080000";
+  },
+  "click button.olive": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#808000";
+  },
+  "click button.lime": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#00FF00";
+  },
+  "click button.aqua": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#00FFFF";
+  },
+  "click button.teal": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#008080";
+  },
+  "click button.navy": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#000080";
+  },
+  "click button.fushia": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#FF00FF";
+  },
+  "click button.purple": function () {
+    lastX=0;
+    lastY=0;
+    strokeColor = "#800080";
   },
 
-  "click button.thicker": function () {
-    console.log(thickness)
-    thickness+=1;
+});
+Template.wall.helpers({
+  sliderVal : function(){
+    var slider = points.findOne();
+    if (slider && slider.w !== undefined) { 
+        Template.instance().$('#slider').data('uiSlider').value(slider.w);
+        return slider.w;
+      }
+  }
+});
+Template.wall.onRendered(function(){
+    var handler = _.throttle(function(event, ui){
+      var val = points.findOne({});
+      console.log(val)
+      thickness= ui.value
+      Session.set("sliderVal", thickness);
+      points.update({_id:val._id},{$set: {w: thickness}})
+     }, 50, { leading: false });
 
-  },
-
-  "click button.thinner": function () {
-    
-    if (thickness > 0) {
-      thickness-=1;
+    if (!this.$('#slider').data('uiSlider')) {
+      $('#slider').slider({
+      slide:handler,
+      min:0,
+      max:40,
+    });
     }
-  },
-
-
-
-})
+  });
 
 var markPoint = function() {
 
@@ -137,7 +238,7 @@ Template.canvas.events({
   'mouseup': function (event) {
     Session.set('draw', false);
     lastX=0;
-    lasyY=0;
+    lastY=0;
   },
   'mousemove': function (event) {
     if (Session.get('draw')) {
@@ -145,3 +246,4 @@ Template.canvas.events({
     }
   }
 });
+
